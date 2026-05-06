@@ -62,12 +62,13 @@ func (ts *TopicRestService) SendData(cameraID string, streamID string, topicName
 			currentFile = TreatMetadataFile(file, sourceStreamID)
 		}
 
-		err = repositories.SendPostRequest(topicRestUrl, currentFile, "text/"+fileFormat)
+		err = repositories.SendPostRequest(topicRestUrl, currentFile, getTopicContentType(fileFormat))
 		if err != nil {
 			return err
 		}
 	}
 
+	log.Printf("Successfully sent %d payload(s) to topic %s via %s", len(files), topicName, topicRestUrl)
 	return nil
 }
 
@@ -122,9 +123,11 @@ func (ts *TopicRestService) SendDataAsync(cameraID string, streamID string, topi
 			index++
 
 			// Publish data into Milestone AI Bridge.
-			err := repositories.SendPostRequest(topicRestUrl, currentFile, "text/"+fileFormat)
+			err := repositories.SendPostRequest(topicRestUrl, currentFile, getTopicContentType(fileFormat))
 			if err != nil {
 				log.Printf("Couldn't publish the data: %v", err)
+			} else {
+				log.Printf("Successfully sent payload to topic %s via %s", topicName, topicRestUrl)
 			}
 		}
 	}()
@@ -135,4 +138,15 @@ func (ts *TopicRestService) StopSendingData(cameraID string) {
 
 	log.Printf("Stopping sending data related to the cameraID %s", cameraID)
 	ts.dataBeingSent.Delete(cameraID)
+}
+
+func getTopicContentType(fileFormat string) string {
+	switch fileFormat {
+	case "json":
+		return "application/json"
+	case "xml":
+		return "application/xml"
+	default:
+		return "text/" + fileFormat
+	}
 }
