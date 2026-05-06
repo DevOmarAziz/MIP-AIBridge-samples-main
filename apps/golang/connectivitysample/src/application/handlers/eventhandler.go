@@ -10,8 +10,7 @@ import (
 	"net/http"
 )
 
-var startStatus = "Start"
-var stopStatus = "Stop"
+var sendStatus = "Send"
 
 // Handles all requests coming to the '/event' endpoint.
 type EventHandler struct {
@@ -51,12 +50,6 @@ func (eh *EventHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	cameraID := queryStringContext.CameraID
 	streamID := queryStringContext.StreamID
 
-	isEventBeingSent := eh.TopicRestService.IsDataBeingSent(cameraID)
-	eventSendingCurrentStatus := startStatus
-	if isEventBeingSent {
-		eventSendingCurrentStatus = stopStatus
-	}
-
 	// return the event-camera-page.html
 	path := "templates/event-camera-page.html"
 	template, err := template.ParseFS(templateFS, path)
@@ -76,7 +69,7 @@ func (eh *EventHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		CameraID:   cameraID,
 		StreamID:   streamID,
 		TopicName:  topicName,
-		Status:     eventSendingCurrentStatus,
+		Status:     sendStatus,
 		AppUrlPath: eh.commandLineParameters.AppUrlPath(),
 	}
 	// write to the response
@@ -84,8 +77,8 @@ func (eh *EventHandler) Handle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handles the requests coming to the '/event/processing/sendanalyticevents' endpoint
-// This happens when the user clicks the 'start'-'stop' button in the MC
-// As a result, we stop sending an event (if we were sending it) or start sending an event (if we were not)
+// This happens when the user clicks the 'send' button in the MC.
+// As a result, the app sends one analytic event on demand.
 func (eh *EventHandler) ProcessingHandle(w http.ResponseWriter, r *http.Request) {
 	// Request body coming in
 	var eventData struct {
@@ -103,19 +96,19 @@ func (eh *EventHandler) ProcessingHandle(w http.ResponseWriter, r *http.Request)
 		EventStatus string `json:"EventStatus"`
 	}
 
-	isEventBeingSent := eh.TopicRestService.IsDataBeingSent(eventData.CameraID)
-	if isEventBeingSent {
-		eh.TopicRestService.StopSendingData(eventData.CameraID)
-		eventDataResponse.EventStatus = startStatus
-	} else {
-		json, err := eh.fileReader.ReadSingleFile()
-		if err != nil {
-			log.Printf("Error getting the analytic events: %s", err)
-			return
-		}
-		eh.TopicRestService.SendDataAsync(eventData.CameraID, eventData.TopicName, eventData.TopicName, enums.Event, "json", []string{json})
-		eventDataResponse.EventStatus = stopStatus
+	eventPayload, err := eh.fileReader.ReadSingleFile()
+	if err != nil {
+		log.Printf("Error getting the analytic events: %s", err)
+		http.Error(w, "Failed to load analytic event", http.StatusInternalServerError)
+		return
 	}
+	err = eh.TopicRestService.SendData(eventData.CameraID, eventData.TopicName, eventData.TopicName, enums.Event, "json", []string{eventPayload})
+	if err != nil {
+		log.Printf("Error sending the analytic event: %s", err)
+		http.Error(w, "Failed to send analytic event", http.StatusBadGateway)
+		return
+	}
+	eventDataResponse.EventStatus = sendStatus
 
 	// Respond to the client (Button Start or Stop text in MC)
 	w.WriteHeader(http.StatusOK)

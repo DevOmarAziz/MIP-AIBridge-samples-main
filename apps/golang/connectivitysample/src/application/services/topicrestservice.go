@@ -4,6 +4,7 @@ import (
 	"connectivitysample/src/domain/enums"
 	"connectivitysample/src/infrastructure/repositories"
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -29,6 +30,45 @@ func (ts *TopicRestService) IsDataBeingSent(cameraID string) bool {
 	_, found := ts.dataBeingSent.Load(cameraID)
 
 	return found
+}
+
+// Sends the provided event or metadata payloads once, in order.
+func (ts *TopicRestService) SendData(cameraID string, streamID string, topicName string, topicFormat int, fileFormat string, files []string) error {
+	sourceStreamID := cameraID + "/" + streamID
+	log.Printf("Sending data manually for the SourceStreamID %s", sourceStreamID)
+
+	topicRestUrl := ""
+	var err error
+
+	switch topicFormat {
+	case enums.Event:
+		topicRestUrl, err = ts.graphqlService.GetRestEventTopicEndpoint(context.Background(), topicName)
+	case enums.Metadata:
+		topicRestUrl, err = ts.graphqlService.GetRestMetadataTopicEndpoint(context.Background(), topicName)
+	default:
+		return fmt.Errorf("unsupported topic format: %d", topicFormat)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		currentFile := ""
+		switch topicFormat {
+		case enums.Event:
+			currentFile = TreatEventFile(file, cameraID)
+		case enums.Metadata:
+			currentFile = TreatMetadataFile(file, sourceStreamID)
+		}
+
+		err = repositories.SendPostRequest(topicRestUrl, currentFile, "text/"+fileFormat)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Start sending data to a given cameraID every 1 second (fire & forget)
