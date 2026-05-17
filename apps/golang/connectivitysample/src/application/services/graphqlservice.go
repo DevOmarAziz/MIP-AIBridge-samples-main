@@ -32,6 +32,11 @@ func (gs *GraphqlService) GetVmsIds(ctx context.Context) ([]string, error) {
 	return gs.graphqlRepository.GetVmsIds(ctx, gs.requestUrl)
 }
 
+// Gets the list of cameras with ID and name registered in Milestone AI Bridge.
+func (gs *GraphqlService) GetCameras(ctx context.Context) ([]entities.Camera, error) {
+	return gs.graphqlRepository.GetCameras(ctx, gs.requestUrl)
+}
+
 // Gets the base64 encoded snapshot image for a given device and stream
 func (gs *GraphqlService) GetSnapshot(ctx context.Context, deviceID, streamID, token string, commandLineParameters *entities.CommandLineParameters) (string, error) {
 	return gs.graphqlRepository.GetSnapshot(ctx, gs.requestUrl, deviceID, streamID, token, commandLineParameters)

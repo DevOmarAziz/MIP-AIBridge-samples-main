@@ -140,6 +140,32 @@ func (gr *GraphqlRepository) GetSnapshot(ctx context.Context, requestUrl, device
 	return result.Data.Cameras[0].VideoStreams[0].SnapShot.JpegImage, nil
 }
 
+// Gets the list of cameras with ID and name.
+func (gr *GraphqlRepository) GetCameras(ctx context.Context, requestUrl string) ([]entities.Camera, error) {
+	request := `{
+		"query": "query { cameras { id name } }",
+		"variables": null
+	}`
+
+	response, err := gr.sendRequest(ctx, requestUrl, request)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Data struct {
+			Cameras []entities.Camera `json:"cameras"`
+		} `json:"data"`
+	}
+
+	err = json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Data.Cameras, nil
+}
+
 // Gets the rest event topic endpoint for a given topic name.
 func (gr *GraphqlRepository) GetRestEventTopicEndpoint(ctx context.Context, requestUrl, topicName string) (string, error) {
 	// Build request

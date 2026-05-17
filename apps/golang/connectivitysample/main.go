@@ -11,10 +11,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"connectivitysample/src/application/handlers"
@@ -135,6 +137,84 @@ func main() {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+	})
+
+	type cameraPayloadRequest struct {
+		TopicName string          `json:"topicName"`
+		Payload   json.RawMessage `json:"payload"`
+	}
+
+	http.HandleFunc("/api/cameras", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			cameras, err := analyticEventService.GetCameras(context.Background())
+			if err != nil {
+				http.Error(w, "Failed to retrieve cameras: "+err.Error(), http.StatusBadGateway)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cameras)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/api/cameras/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		path := strings.TrimPrefix(r.URL.Path, "/api/cameras/")
+		parts := strings.Split(strings.Trim(path, "/"), "/")
+		if len(parts) != 2 {
+			http.NotFound(w, r)
+			return
+		}
+
+		cameraID := parts[0]
+		action := parts[1]
+
+		var request cameraPayloadRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if request.TopicName == "" {
+			http.Error(w, "topicName is required", http.StatusBadRequest)
+			return
+		}
+
+		if len(request.Payload) == 0 {
+			http.Error(w, "payload is required", http.StatusBadRequest)
+			return
+		}
+
+		contentType := strings.TrimSpace(strings.Split(r.Header.Get("Content-Type"), ";")[0])
+		if contentType == "" {
+			contentType = "application/json"
+		}
+
+		switch action {
+		case "analytics":
+			err := analyticEventService.SendAnalyticsEvent(cameraID, request.TopicName, request.Payload)
+			if err != nil {
+				http.Error(w, "Failed sending analytics event: "+err.Error(), http.StatusBadGateway)
+				return
+			}
+		case "metadata":
+			err := onvifMetadataService.SendMetadata(cameraID, request.TopicName, request.Payload, contentType)
+			if err != nil {
+				http.Error(w, "Failed sending metadata: "+err.Error(), http.StatusBadGateway)
+				return
+			}
+		default:
+			http.NotFound(w, r)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	})
 
 	log.Println("Registering the application against all connected VMSs")

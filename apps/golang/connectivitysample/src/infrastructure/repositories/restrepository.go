@@ -23,7 +23,7 @@ func SendPostRequest(url string, body string, contentType string) error {
 	if response.StatusCode != 200 {
 		body, _ := io.ReadAll(response.Body)
 		errorMessage := fmt.Sprintf("Error when doing the POST request. Response status:'%s' Body:'%s'", response.Status, string(body))
-		log.Printf(errorMessage)
+		log.Print(errorMessage)
 		return errors.New(errorMessage)
 	}
 	return nil

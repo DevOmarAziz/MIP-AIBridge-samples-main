@@ -1,6 +1,7 @@
 package services
 
 import (
+	entities "connectivitysample/src/domain/entities"
 	"connectivitysample/src/domain/enums"
 	"connectivitysample/src/infrastructure/repositories"
 	"context"
@@ -23,6 +24,45 @@ func NewTopicRestService(dataBeingSent *sync.Map, graphqlService *GraphqlService
 }
 
 // Public methods
+
+// GetCameras returns cameras with ID and name from the GraphQL API.
+func (ts *TopicRestService) GetCameras(ctx context.Context) ([]entities.Camera, error) {
+	return ts.graphqlService.GetCameras(ctx)
+}
+
+// SendAnalyticsEvent sends an analytics event payload for a specific camera.
+func (ts *TopicRestService) SendAnalyticsEvent(cameraID string, topicName string, payload []byte) error {
+	if topicName == "" {
+		return fmt.Errorf("topicName must be provided")
+	}
+
+	topicRestUrl, err := ts.graphqlService.GetRestEventTopicEndpoint(context.Background(), topicName)
+	if err != nil {
+		return err
+	}
+
+	currentPayload := TreatEventFile(string(payload), cameraID)
+	return repositories.SendPostRequest(topicRestUrl, currentPayload, "application/json")
+}
+
+// SendMetadata sends a metadata payload for a specific camera.
+func (ts *TopicRestService) SendMetadata(cameraID string, topicName string, payload []byte, contentType string) error {
+	if topicName == "" {
+		return fmt.Errorf("topicName must be provided")
+	}
+
+	topicRestUrl, err := ts.graphqlService.GetRestMetadataTopicEndpoint(context.Background(), topicName)
+	if err != nil {
+		return err
+	}
+
+	if contentType == "" {
+		contentType = "application/json"
+	}
+
+	currentPayload := TreatMetadataFile(string(payload), cameraID)
+	return repositories.SendPostRequest(topicRestUrl, currentPayload, contentType)
+}
 
 // Check if the given cameraID is being used for sending data
 func (ts *TopicRestService) IsDataBeingSent(cameraID string) bool {
