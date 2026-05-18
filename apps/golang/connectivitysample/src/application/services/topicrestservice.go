@@ -46,7 +46,7 @@ func (ts *TopicRestService) SendAnalyticsEvent(cameraID string, topicName string
 }
 
 // SendMetadata sends a metadata payload for a specific camera.
-func (ts *TopicRestService) SendMetadata(cameraID string, topicName string, payload []byte, contentType string) error {
+func (ts *TopicRestService) SendMetadata(cameraID string, streamID string, topicName string, payload []byte, contentType string) error {
 	if topicName == "" {
 		return fmt.Errorf("topicName must be provided")
 	}
@@ -60,7 +60,12 @@ func (ts *TopicRestService) SendMetadata(cameraID string, topicName string, payl
 		contentType = "application/json"
 	}
 
-	currentPayload := TreatMetadataFile(string(payload), cameraID)
+	sourceStreamID := cameraID
+	if streamID != "" {
+		sourceStreamID = cameraID + "/" + streamID
+	}
+
+	currentPayload := TreatMetadataFile(string(payload), sourceStreamID)
 	return repositories.SendPostRequest(topicRestUrl, currentPayload, contentType)
 }
 

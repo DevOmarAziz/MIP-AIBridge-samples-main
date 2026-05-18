@@ -141,6 +141,7 @@ func main() {
 
 	type cameraPayloadRequest struct {
 		TopicName string          `json:"topicName"`
+		StreamID  string          `json:"streamId,omitempty"`
 		Payload   json.RawMessage `json:"payload"`
 	}
 
@@ -204,7 +205,7 @@ func main() {
 				return
 			}
 		case "metadata":
-			err := onvifMetadataService.SendMetadata(cameraID, request.TopicName, request.Payload, contentType)
+			err := onvifMetadataService.SendMetadata(cameraID, request.StreamID, request.TopicName, request.Payload, contentType)
 			if err != nil {
 				http.Error(w, "Failed sending metadata: "+err.Error(), http.StatusBadGateway)
 				return

@@ -1,0 +1,11 @@
+curl -Uri "http://192.168.100.65:7443/api/cameras/<CamerId>/analytics" `
+     -Method POST `
+     -ContentType "application/json" `
+     -Body '{"topicName":"sendanalyticevents","payload":{"eventType":"someEvent","data":{}}}'
+
+
+
+curl -Uri "http://192.168.100.65:7443/api/cameras/3183fcd9-0fcc-48fc-a03c-966de67dc49f/metadata" `
+     -Method POST `
+     -ContentType "application/json" `
+     -Body '{"topicName":"sendonvif","payload":{"some":"metadat"}}'  

@@ -143,7 +143,7 @@ func (gr *GraphqlRepository) GetSnapshot(ctx context.Context, requestUrl, device
 // Gets the list of cameras with ID and name.
 func (gr *GraphqlRepository) GetCameras(ctx context.Context, requestUrl string) ([]entities.Camera, error) {
 	request := `{
-		"query": "query { cameras { id name } }",
+		"query": "query { cameras { id name videoStreams {id} } }",
 		"variables": null
 	}`
 
