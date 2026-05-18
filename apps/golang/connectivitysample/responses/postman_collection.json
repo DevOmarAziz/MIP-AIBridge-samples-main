@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Connectivity Sample API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for the Connectivity Sample camera and topic endpoints. Replace {{host}} with the service host and port."
+  },
+  "item": [
+    {
+      "name": "List cameras",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://{{host}}/api/cameras",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "cameras"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send analytics event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topicName\": \"sendanalyticevents\",\n  \"payload\": {\n    \"name\": \"My event\",\n    \"description\": \"Sample analytics event\",\n    \"class\": \"MyEventClass\",\n    \"fromSource\": {\n      \"type\": \"Reference\",\n      \"uuid\": \"{{cameraId}}\"\n    },\n    \"relatedTo\": [\n      { \"type\": \"Reference\", \"uuid\": \"{{cameraId}}\" }\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "http://{{host}}/api/cameras/{{cameraId}}/analytics",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "cameras",
+            "{{cameraId}}",
+            "analytics"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send metadata",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<tt:MetadataStream xmlns:tt=\"http://www.onvif.org/ver10/schema\">\n  <tt:VideoAnalytics>\n    <tt:Frame UtcTime=\"##CurrentTimestamp##\" SourceStreamID=\"##CameraStreamId##\">\n      <tt:Object ObjectId=\"1\">\n        <tt:Appearance>\n          <tt:Class>\n            <tt:ClassCandidate>\n              <tt:Type>Vehicle</tt:Type>\n              <tt:Likelihood>0.9</tt:Likelihood>\n            </tt:ClassCandidate>\n          </tt:Class>\n        </tt:Appearance>\n      </tt:Object>\n    </tt:Frame>\n  </tt:VideoAnalytics>\n</tt:MetadataStream>"
+        },
+        "url": {
+          "raw": "http://{{host}}/api/cameras/{{cameraId}}/metadata",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "cameras",
+            "{{cameraId}}",
+            "metadata"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

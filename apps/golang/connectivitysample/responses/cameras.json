@@ -4,14 +4,29 @@
     },
     {
         "id": "c3b7afa4-5792-4998-8209-6ceb2040db15",
-        "name": "AXIS P1467-LE Bullet Camera (192.168.101.250) - Camera 1"
+        "name": "AXIS P1467-LE Bullet Camera (192.168.101.250) - Camera 1",
+        "videoStreams": [
+            {
+                "id": "c3b7afa4-5792-4998-8209-6ceb2040db15/28dc44c3-079e-4c94-8ec9-60363451eb40"
+            }
+        ]
     },
     {
         "id": "3183fcd9-0fcc-48fc-a03c-966de67dc49f",
-        "name": "AXIS P1467-LE Bullet Camera (192.168.101.218) - Camera 1"
+        "name": "AXIS P1467-LE Bullet Camera (192.168.101.218) - Camera 1",
+        "videoStreams": [
+            {
+                "id": "3183fcd9-0fcc-48fc-a03c-966de67dc49f/28dc44c3-079e-4c94-8ec9-60363451eb40"
+            }
+        ]
     },
     {
         "id": "f16d0523-0986-4a1c-a437-130d0c332c73",
-        "name": "IDIS DC-T4236WRX (192.168.101.130) - Camera 1"
+        "name": "IDIS DC-T4236WRX (192.168.101.130) - Camera 1",
+        "videoStreams": [
+            {
+                "id": "f16d0523-0986-4a1c-a437-130d0c332c73/28dc44c3-079e-4c94-8ec9-60363451eb40"
+            }
+        ]
     }
 ]
