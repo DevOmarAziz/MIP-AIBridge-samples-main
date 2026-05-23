@@ -9,29 +9,29 @@ apps: [ {
   }
   eventTopics: [ {
     url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/snapshot"
-    name: "getsnapshot"
-    description: "Get a Snapshot from the video"
+    name: "${SNAPSHOT_TOPIC_NAME}"
+    description: "${SNAPSHOT_TOPIC_DESCRIPTION}"
     eventFormat: ANALYTICS_EVENT
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/event/sendanalyticevents"
-    name: "sendanalyticevents"
-    description: "Send Analytic Events"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/event/${ANALYTIC_EVENT_TOPIC_PATH}"
+    name: "${ANALYTIC_EVENT_TOPIC_NAME}"
+    description: "${ANALYTIC_EVENT_TOPIC_DESCRIPTION}"
     eventFormat: ANALYTICS_EVENT
   } ]
   metadataTopics: [ {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvif/sendonvif"
-    name: "sendonvif"
-    description: "Send ONVIF Metadata"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvif/${ONVIF_TOPIC_PATH}"
+    name: "${ONVIF_TOPIC_NAME}"
+    description: "${ONVIF_TOPIC_DESCRIPTION}"
     metadataFormat: ONVIF_ANALYTICS
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvifframe/sendframe"
-    name: "sendframe"
-    description: "Send ONVIF Frame Metadata"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvifframe/${ONVIF_FRAME_TOPIC_PATH}"
+    name: "${ONVIF_FRAME_TOPIC_NAME}"
+    description: "${ONVIF_FRAME_TOPIC_DESCRIPTION}"
     metadataFormat: ONVIF_ANALYTICS_FRAME
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/deepstreamminimal/senddeepstreamminimal"
-    name: "senddeepstreamminimal"
-    description: "Send Deepstream Minimal Metadata"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/deepstreamminimal/${DEEPSTREAM_MINIMAL_TOPIC_PATH}"
+    name: "${DEEPSTREAM_MINIMAL_TOPIC_NAME}"
+    description: "${DEEPSTREAM_MINIMAL_TOPIC_DESCRIPTION}"
     metadataFormat: DEEPSTREAM_MINIMAL
   } ]
 }]

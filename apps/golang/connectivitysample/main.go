@@ -14,11 +14,13 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 
 	"connectivitysample/src/application/handlers"
 	"connectivitysample/src/application/services"
+	"connectivitysample/src/common"
 	"connectivitysample/src/domain/entities"
 	"connectivitysample/src/infrastructure/repositories"
 	runinfo "connectivitysample/src/infrastructure/runninginfo"
@@ -54,9 +56,13 @@ func main() {
 	var enforceOauthArg = flag.Bool("enforce-oauth", true, "MC requests will add the logged user's oauth token. This flag signals if the app should forward that token or use Milestone AI Bridge designated user instead.")
 	var snapshotMaxWidthArg = flag.Int("snapshot-max-width", 300, "Max Width for the snapshot if not specified will 300 by default")
 	var snapshotMaxHeightArg = flag.Int("snapshot-max-height", 300, "Max Height for the snapshot if not specified will 300 by default")
-	var appRegistrationFilePathArg = flag.String("app-registration-file-path", "config/register.graphql", "graphql file containing the description and topics of connectivity sample to be registered within the system")
+	var appRegistrationFilePathArg = flag.String("app-registration-file-path", "config/register.graphql", "graphql file containing the description and topics of the app to be registered within the system")
 	var appWebserverPortArg = flag.Int("app-webserver-port", 7443, "The port in which the app can be reached")
-	var appUrlPathArg = flag.String("app-url-path", "connectivitysample", "The url path set for the current application")
+	defaultAppURLPath := common.DefaultAppURLPath
+	if envAppURLPath := os.Getenv("APP_URL_PATH"); envAppURLPath != "" {
+		defaultAppURLPath = envAppURLPath
+	}
+	var appUrlPathArg = flag.String("app-url-path", defaultAppURLPath, "The url path set for the current application")
 
 	flag.Parse()
 
@@ -73,7 +79,11 @@ func main() {
 		*appRegistrationFilePathArg, *appWebserverPortArg, *appUrlPathArg, tlsConfiguration)
 
 	// Show information to user
-	runinfo.Print("connectivity-sample")
+	componentName := common.AppName
+	if envAppName := os.Getenv("APP_NAME"); envAppName != "" {
+		componentName = envAppName
+	}
+	runinfo.Print(componentName)
 
 	// This is the URL of the Milestone AI Bridge GraphQL web service. Using localhost like
 	// here assumes that you are running the Milestone AI Bridge in debug mode. If running in
@@ -157,7 +167,7 @@ func main() {
 	}
 
 	for _, vmsId := range vmsIds {
-		err = graphqlService.RegisterConnectivitySample(context.Background(), populatedRegistrationFileContent, vmsId)
+		err = graphqlService.RegisterApplication(context.Background(), populatedRegistrationFileContent, vmsId)
 		if err != nil {
 			log.Printf("Could not register the vms ID = %s Error message: %v ", vmsId, err)
 		} else {
