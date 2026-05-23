@@ -10,6 +10,8 @@
 package main
 
 import (
+	bridgeevents "connectivitysample/internal/events"
+	bridgemetadata "connectivitysample/internal/metadata"
 	"context"
 	"encoding/json"
 	"flag"
@@ -37,6 +39,7 @@ var analyticEventService *services.TopicRestService
 var onvifMetadataService *services.TopicRestService
 var onvifFrameMetadataService *services.TopicRestService
 var deepstreamMinimalMetadataService *services.TopicRestService
+var bridgePublisherService *services.BridgePublisherService
 
 // Handlers
 var homeHandler *handlers.HomeHandler
@@ -92,6 +95,11 @@ func main() {
 	onvifMetadataService = services.NewTopicRestService(&sync.Map{}, graphqlService)
 	onvifFrameMetadataService = services.NewTopicRestService(&sync.Map{}, graphqlService)
 	deepstreamMinimalMetadataService = services.NewTopicRestService(&sync.Map{}, graphqlService)
+	bridgePublisherService = services.NewBridgePublisherService(graphqlService)
+	if err := bridgePublisherService.RegisterMetadataTopic(bridgemetadata.NewMetadataTopic("sendframe")); err != nil {
+		log.Printf("Error registering metadata topic sendframe: %v", err)
+		return
+	}
 
 	homeHandler = handlers.NewHomeHandler()
 	snapshotHandler = handlers.NewSnapshotHandler(tokenService, graphqlService, queryStringService, commandLineParameters)
@@ -143,6 +151,18 @@ func main() {
 		TopicName string          `json:"topicName"`
 		StreamID  string          `json:"streamId,omitempty"`
 		Payload   json.RawMessage `json:"payload"`
+	}
+
+	type bridgeEventRequest struct {
+		TopicName string                      `json:"topicName"`
+		Event     bridgeevents.AnalyticsEvent `json:"event"`
+	}
+
+	type bridgeMetadataRequest struct {
+		TopicName string                       `json:"topicName"`
+		CameraID  string                       `json:"cameraId,omitempty"`
+		StreamID  string                       `json:"streamId,omitempty"`
+		Frame     bridgemetadata.MetadataFrame `json:"frame"`
 	}
 
 	http.HandleFunc("/api/cameras", func(w http.ResponseWriter, r *http.Request) {
@@ -216,6 +236,46 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+	})
+
+	http.HandleFunc("/api/bridge/events", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var request bridgeEventRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := bridgePublisherService.PublishAnalyticsEvent(request.TopicName, request.Event); err != nil {
+			http.Error(w, "Failed queuing analytics event: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	http.HandleFunc("/api/bridge/metadata", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var request bridgeMetadataRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := bridgePublisherService.PublishMetadataFrameForStream(request.TopicName, request.CameraID, request.StreamID, request.Frame); err != nil {
+			http.Error(w, "Failed queuing metadata frame: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusAccepted)
 	})
 
 	log.Println("Registering the application against all connected VMSs")
