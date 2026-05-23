@@ -50,6 +50,6 @@ func (gs *GraphqlService) GetRestMetadataTopicEndpoint(ctx context.Context, topi
 /* --- GraphQL mutations ----------------------------------------------------- */
 
 // Register the app in AIBridge to all connected endpoints
-func (gs *GraphqlService) RegisterConnectivitySample(ctx context.Context, populatedRegistrationFileContent, vmsId string) error {
-	return gs.graphqlRepository.RegisterConnectivitySample(ctx, gs.requestUrl, populatedRegistrationFileContent, vmsId)
+func (gs *GraphqlService) RegisterApplication(ctx context.Context, populatedRegistrationFileContent, vmsId string) error {
+	return gs.graphqlRepository.RegisterApplication(ctx, gs.requestUrl, populatedRegistrationFileContent, vmsId)
 }

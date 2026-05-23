@@ -217,7 +217,7 @@ func (gr *GraphqlRepository) GetRestMetadataTopicEndpoint(ctx context.Context, r
 /* --- GraphQL mutations ----------------------------------------------------- */
 
 // Register the app in AIBridge to all connected endpoints
-func (gr *GraphqlRepository) RegisterConnectivitySample(ctx context.Context, requestUrl, populatedRegistrationFileContent string, vmsId string) error {
+func (gr *GraphqlRepository) RegisterApplication(ctx context.Context, requestUrl, populatedRegistrationFileContent string, vmsId string) error {
 
 	// Build request
 	requestObj := map[string]string{"query": `mutation { register(input: { id: "` + vmsId + `"` + populatedRegistrationFileContent + `}) { id } }`}
