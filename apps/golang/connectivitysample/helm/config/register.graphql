@@ -8,28 +8,28 @@ apps: [ {
     name: "${MANUFACTURER_NAME}"
   }
   eventTopics: [ {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/snapshot"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/processing-server/snapshot"
     name: "${SNAPSHOT_TOPIC_NAME}"
     description: "${SNAPSHOT_TOPIC_DESCRIPTION}"
     eventFormat: ANALYTICS_EVENT
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/event/${ANALYTIC_EVENT_TOPIC_PATH}"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/processing-server/event/${ANALYTIC_EVENT_TOPIC_PATH}"
     name: "${ANALYTIC_EVENT_TOPIC_NAME}"
     description: "${ANALYTIC_EVENT_TOPIC_DESCRIPTION}"
     eventFormat: ANALYTICS_EVENT
   } ]
   metadataTopics: [ {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvif/${ONVIF_TOPIC_PATH}"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/processing-server/metadata/onvif/${ONVIF_TOPIC_PATH}"
     name: "${ONVIF_TOPIC_NAME}"
     description: "${ONVIF_TOPIC_DESCRIPTION}"
     metadataFormat: ONVIF_ANALYTICS
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/onvifframe/${ONVIF_FRAME_TOPIC_PATH}"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/processing-server/metadata/onvifframe/${ONVIF_FRAME_TOPIC_PATH}"
     name: "${ONVIF_FRAME_TOPIC_NAME}"
     description: "${ONVIF_FRAME_TOPIC_DESCRIPTION}"
     metadataFormat: ONVIF_ANALYTICS_FRAME
   }, {
-    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/deepstreamminimal/${DEEPSTREAM_MINIMAL_TOPIC_PATH}"
+    url: "${TLS_SCHEME}://${EXTERNAL_HOSTNAME}/${APP_URL_PATH}/processing-server/metadata/deepstreamminimal/${DEEPSTREAM_MINIMAL_TOPIC_PATH}"
     name: "${DEEPSTREAM_MINIMAL_TOPIC_NAME}"
     description: "${DEEPSTREAM_MINIMAL_TOPIC_DESCRIPTION}"
     metadataFormat: DEEPSTREAM_MINIMAL

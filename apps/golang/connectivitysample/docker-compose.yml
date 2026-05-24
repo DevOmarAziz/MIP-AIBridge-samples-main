@@ -14,6 +14,7 @@ services:
       APP_NAME: ${APP_NAME}
       APP_DESCRIPTION: ${APP_DESCRIPTION}
       MANUFACTURER_NAME: ${MANUFACTURER_NAME}
+      ENFORCE_OAUTH: ${ENFORCE_OAUTH}
       SNAPSHOT_TOPIC_NAME: ${SNAPSHOT_TOPIC_NAME}
       SNAPSHOT_TOPIC_DESCRIPTION: ${SNAPSHOT_TOPIC_DESCRIPTION}
       ANALYTIC_EVENT_TOPIC_NAME: ${ANALYTIC_EVENT_TOPIC_NAME}
@@ -32,7 +33,7 @@ services:
     command: -aib-webservice-location aibridge-webservice:4000
              -snapshot-max-width 600
              -snapshot-max-height 600
-             -enforce-oauth=true
+             -enforce-oauth ${ENFORCE_OAUTH}
              -app-registration-file-path /root/bin/config/register.graphql
              -app-webserver-port ${APP_WEBSERVER_PORT}
              -app-url-path ${APP_URL_PATH}

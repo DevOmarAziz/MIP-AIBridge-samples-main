@@ -53,7 +53,13 @@ func main() {
 	var tlsKeyFileArg = flag.String("tls-key-file", "certs/tls-server/server.key", "Path to .key file containing private key of server (in PEM format)")
 	var tlsEnabledArg = flag.Bool("tls-enabled", false, "If true, the service will be secured using TLS; both a certificate and key must be provided if enabled")
 	var aibWebserviceLocationArg = flag.String("aib-webservice-location", "localhost:4000", "Location of the AIB web-service. It may be different if running directly on host or docker-compose/K8s cluster")
-	var enforceOauthArg = flag.Bool("enforce-oauth", true, "MC requests will add the logged user's oauth token. This flag signals if the app should forward that token or use Milestone AI Bridge designated user instead.")
+	defaultEnforceOauth := true
+	if envEnforceOauth := os.Getenv("ENFORCE_OAUTH"); envEnforceOauth != "" {
+		if parsedEnforceOauth, parseErr := strconv.ParseBool(envEnforceOauth); parseErr == nil {
+			defaultEnforceOauth = parsedEnforceOauth
+		}
+	}
+	var enforceOauthArg = flag.Bool("enforce-oauth", defaultEnforceOauth, "MC requests will add the logged user's oauth token. This flag signals if the app should forward that token or use Milestone AI Bridge designated user instead.")
 	var snapshotMaxWidthArg = flag.Int("snapshot-max-width", 300, "Max Width for the snapshot if not specified will 300 by default")
 	var snapshotMaxHeightArg = flag.Int("snapshot-max-height", 300, "Max Height for the snapshot if not specified will 300 by default")
 	var appRegistrationFilePathArg = flag.String("app-registration-file-path", "config/register.graphql", "graphql file containing the description and topics of the app to be registered within the system")
@@ -110,11 +116,24 @@ func main() {
 
 	http.HandleFunc("/", homeHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/snapshot/", snapshotHandler.Handle)
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/snapshot/", snapshotHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/event/", eventHandler.Handle)
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/event/", eventHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/onvif/", onvifHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/onvifframe/", onvifFrameHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/deepstreamminimal/", deepstreamMinimalHandler.Handle)
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/onvif/", onvifHandler.Handle)
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/onvifframe/", onvifFrameHandler.Handle)
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/deepstreamminimal/", deepstreamMinimalHandler.Handle)
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/event/processing/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			eventHandler.ProcessingHandle(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/event/processing/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			eventHandler.ProcessingHandle(w, r)
@@ -130,6 +149,14 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/onvif/processing/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			onvifHandler.ProcessingHandle(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/onvifframe/processing/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -138,7 +165,23 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/onvifframe/processing/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			onvifFrameHandler.ProcessingHandle(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/deepstreamminimal/processing/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			deepstreamMinimalHandler.ProcessingHandle(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	http.HandleFunc("/"+commandLineParameters.AppUrlPath()+"/processing-server/metadata/deepstreamminimal/processing/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			deepstreamMinimalHandler.ProcessingHandle(w, r)

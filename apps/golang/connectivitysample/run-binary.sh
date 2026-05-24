@@ -25,6 +25,7 @@ export APP_ID=${APP_ID}
 export APP_NAME=${APP_NAME}
 export APP_DESCRIPTION=${APP_DESCRIPTION}
 export MANUFACTURER_NAME=${MANUFACTURER_NAME}
+export ENFORCE_OAUTH=${ENFORCE_OAUTH}
 export SNAPSHOT_TOPIC_NAME=${SNAPSHOT_TOPIC_NAME}
 export SNAPSHOT_TOPIC_DESCRIPTION=${SNAPSHOT_TOPIC_DESCRIPTION}
 export ANALYTIC_EVENT_TOPIC_NAME=${ANALYTIC_EVENT_TOPIC_NAME}
@@ -47,7 +48,7 @@ ${EXECUTABLE_FILE} \
 	-app-registration-file-path "${APP_ROOT_DIR}/config/register.graphql" \
 	-app-url-path ${APP_URL_PATH} \
 	-app-webserver-port ${APP_WEBSERVER_PORT} \
-	-enforce-oauth=true \
+	-enforce-oauth ${ENFORCE_OAUTH:-true} \
 	-snapshot-max-height 600 \
 	-snapshot-max-width 600 \
 	-tls-certificate-file "${APP_ROOT_DIR}/certs/tls-server/server.crt" \

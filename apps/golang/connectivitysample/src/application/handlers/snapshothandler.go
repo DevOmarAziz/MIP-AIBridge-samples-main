@@ -46,7 +46,8 @@ func (sh *SnapshotHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Is a configuration Page Request?
-	if r.URL.Path == "/"+sh.commandLineParameters.AppUrlPath()+"/snapshot/" {
+	if r.URL.Path == "/"+sh.commandLineParameters.AppUrlPath()+"/snapshot/" ||
+		r.URL.Path == "/"+sh.commandLineParameters.AppUrlPath()+"/processing-server/snapshot/" {
 		err := snapshotConfigurationPage(w)
 		if err != nil {
 			log.Println("Error at SnapshotHandler method, during snapshotConfigurationPage execution:" + err.Error())
